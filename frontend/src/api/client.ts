@@ -1,6 +1,7 @@
 /**
  * API client for communicating with the backend.
- * All endpoints are proxied through Vite dev server to avoid CORS issues.
+ * In production, set VITE_API_BASE_URL to your backend origin (e.g. https://your-backend.railway.app).
+ * In dev, leave unset to use the Vite proxy (localhost:8000).
  */
 
 import type {
@@ -12,7 +13,8 @@ import type {
   DocumentCountResponse,
 } from '../types';
 
-const API_BASE = '/api';
+const BACKEND_ORIGIN = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE = BACKEND_ORIGIN ? `${BACKEND_ORIGIN.replace(/\/$/, '')}/api` : '/api';
 
 class ApiError extends Error {
   status: number;
@@ -76,7 +78,8 @@ export async function getDocumentCounts(): Promise<DocumentCountResponse> {
  * Health check endpoint.
  */
 export async function healthCheck(): Promise<{ status: string }> {
-  const response = await fetch(`${API_BASE.replace('/api', '')}/health`);
+  const healthUrl = BACKEND_ORIGIN ? `${BACKEND_ORIGIN.replace(/\/$/, '')}/health` : '/health';
+  const response = await fetch(healthUrl);
   return handleResponse<{ status: string }>(response);
 }
 

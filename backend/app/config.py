@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # More advocates = more perspectives but higher latency/cost
     debate_num_advocates: int = 2
 
+    # CORS: allowed frontend origin(s). Comma-separated for multiple.
+    # Set in production (e.g. Railway) to your frontend URL. Leave empty for local dev (localhost:5173).
+    frontend_origin: str = ""
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

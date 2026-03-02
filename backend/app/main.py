@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+from app.config import get_settings
 from app.database import engine, Base
 
 # Import models so SQLAlchemy knows about them when creating tables
@@ -67,10 +68,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS for frontend
+# CORS: use FRONTEND_ORIGIN env (comma-separated); default to Vite dev server when unset
+_origins_raw = get_settings().frontend_origin.strip()
+_cors_origins = [o.strip() for o in _origins_raw.split(",") if o.strip()] or ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite default
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
