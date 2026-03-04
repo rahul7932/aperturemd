@@ -5,6 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  preview: {
+    // Only allow your deployed host(s). Add new host if Railway gives you a new URL.
+    allowedHosts: ['frontend-production-6201.up.railway.app'],
+  },
   server: {
     proxy: {
       '/api': {
