@@ -45,6 +45,7 @@ from app.models.schemas import (
     EvidenceReference,
     EvidenceSummary,
     DocumentWithScore,
+    CoverageInfo,
 )
 
 # Services
@@ -83,6 +84,8 @@ class PipelineResult:
     documents: list[DocumentWithScore] = None
     fetch_triggered: bool = False
     documents_fetched: int = 0
+    coverage_before_fetch: CoverageInfo | None = None
+    coverage_after_fetch: CoverageInfo | None = None
     
     # Generation stage
     answer: str = ""
@@ -199,10 +202,22 @@ class QueryPipeline:
         result.documents = await retrieve_documents(
             result.expanded_query, self.db, result.top_k
         )
+
+        # Always compute initial coverage (cheap + useful for debugging/UI)
+        initial_coverage = check_coverage(result.documents)
+        result.coverage_before_fetch = CoverageInfo(
+            is_sufficient=initial_coverage.is_sufficient,
+            document_count=initial_coverage.document_count,
+            avg_relevance=initial_coverage.avg_relevance,
+            reason=initial_coverage.reason,
+        )
         
         # Check coverage and optionally fetch more
         if result.live_fetch:
             await self._handle_live_fetch(result)
+        else:
+            # No fetch allowed; final coverage equals initial
+            result.coverage_after_fetch = result.coverage_before_fetch
         
         logger.info(f"Retrieval complete: {len(result.documents)} documents")
     
@@ -212,6 +227,7 @@ class QueryPipeline:
         logger.info(f"Coverage check: {coverage.reason}")
         
         if coverage.is_sufficient:
+            result.coverage_after_fetch = result.coverage_before_fetch
             return
         
         logger.info("Low coverage detected, fetching from PubMed...")
@@ -238,6 +254,17 @@ class QueryPipeline:
                 result.expanded_query, self.db, result.top_k
             )
             logger.info(f"Re-retrieved {len(result.documents)} documents after fetch")
+
+            final_coverage = check_coverage(result.documents)
+            result.coverage_after_fetch = CoverageInfo(
+                is_sufficient=final_coverage.is_sufficient,
+                document_count=final_coverage.document_count,
+                avg_relevance=final_coverage.avg_relevance,
+                reason=final_coverage.reason,
+            )
+        else:
+            # Fetch returned nothing (or failed); final coverage equals initial
+            result.coverage_after_fetch = result.coverage_before_fetch
     
     async def _save_articles(self, articles: list[dict]) -> int:
         """Save articles to database, skipping duplicates. Returns count saved."""
@@ -370,6 +397,8 @@ class QueryPipeline:
             hallucinated_citations=result.citation_result.hallucinated_pmids,
             fetch_triggered=result.fetch_triggered,
             documents_fetched=result.documents_fetched,
+            coverage_before_fetch=result.coverage_before_fetch,
+            coverage_after_fetch=result.coverage_after_fetch,
         )
     
     def _build_claims(self, result: PipelineResult) -> list[Claim]:
@@ -426,6 +455,8 @@ class QueryPipeline:
             hallucinated_citations=[],
             fetch_triggered=result.fetch_triggered,
             documents_fetched=result.documents_fetched,
+            coverage_before_fetch=result.coverage_before_fetch,
+            coverage_after_fetch=result.coverage_after_fetch,
         )
 
 

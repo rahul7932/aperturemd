@@ -160,6 +160,19 @@ class EvidenceSummary(BaseModel):
     neutral: int
 
 
+class CoverageInfo(BaseModel):
+    """
+    Summary of retrieval coverage quality.
+
+    Used to explain whether we had enough relevant documents, and whether live fetch
+    was needed (when enabled).
+    """
+    is_sufficient: bool
+    document_count: int
+    avg_relevance: float
+    reason: str
+
+
 class TrustReport(BaseModel):
     """
     The main output of the Trust Layer.
@@ -221,6 +234,16 @@ class TrustReport(BaseModel):
     documents_fetched: int = Field(
         default=0,
         description="Number of new documents fetched from PubMed (0 if fetch not triggered)"
+    )
+
+    # Retrieval coverage information (for transparency/debugging)
+    coverage_before_fetch: CoverageInfo | None = Field(
+        default=None,
+        description="Coverage assessment after initial retrieval (before any live fetch)"
+    )
+    coverage_after_fetch: CoverageInfo | None = Field(
+        default=None,
+        description="Coverage assessment after live fetch + re-retrieval (if fetch ran)"
     )
 
 

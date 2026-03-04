@@ -39,6 +39,11 @@ export interface TrustReport {
   overall_confidence: number;
   evidence_summary: EvidenceSummary;
   global_gaps: string[];
+  hallucinated_citations?: string[];
+  fetch_triggered?: boolean;
+  documents_fetched?: number;
+  coverage_before_fetch?: CoverageInfo | null;
+  coverage_after_fetch?: CoverageInfo | null;
 }
 
 // Request body for /api/query
@@ -49,6 +54,13 @@ export interface QueryRequest {
   live_fetch?: boolean;
   /** Max documents to fetch from PubMed when live_fetch is true (default 50) */
   max_fetch?: number;
+}
+
+export interface CoverageInfo {
+  is_sufficient: boolean;
+  document_count: number;
+  avg_relevance: number;
+  reason: string;
 }
 
 // Document response from the backend

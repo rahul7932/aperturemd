@@ -104,12 +104,12 @@ export function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
           >
             <span
               className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
-                liveFetch ? 'translate-x-5' : 'translate-x-1'
+                liveFetch ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </button>
           <label className="text-sm text-text-secondary cursor-pointer select-none" onClick={() => !isLoading && setLiveFetch((v) => !v)}>
-            Live fetch from PubMed when coverage is low
+            Allow live fetch from PubMed when coverage is low
           </label>
           {liveFetch && (
             <span className="text-xs text-text-muted">(may take longer)</span>

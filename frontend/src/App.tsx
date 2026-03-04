@@ -7,10 +7,12 @@ function App() {
   const [report, setReport] = useState<TrustReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastOptions, setLastOptions] = useState<QueryOptions | null>(null);
 
   const handleQuery = async (question: string, options: QueryOptions) => {
     setIsLoading(true);
     setError(null);
+    setLastOptions(options);
     
     try {
       const result = await submitQuery({
@@ -70,6 +72,59 @@ function App() {
 
         {/* Loading State - multi-step pipeline indicator */}
         {isLoading && <PipelineStepper isLoading={isLoading} />}
+
+        {/* Live fetch decision (when user allowed it) */}
+        {report && !isLoading && lastOptions?.live_fetch && (
+          <div className="mb-6 rounded-2xl border border-surface-hover bg-surface-elevated/60 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-text-primary">Live fetch decision</span>
+                  {report.fetch_triggered ? (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30">
+                      Triggered
+                    </span>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-surface-hover/50 text-text-secondary border border-surface-hover">
+                      Skipped
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-text-muted">
+                  {report.coverage_before_fetch?.reason ?? 'Coverage check completed.'}
+                </p>
+              </div>
+
+              {report.fetch_triggered && (
+                <div className="shrink-0 text-xs text-text-secondary bg-surface border border-surface-hover rounded-xl px-3 py-2">
+                  <span className="font-medium text-text-primary">
+                    {(report.documents_fetched ?? 0).toLocaleString()}
+                  </span>{' '}
+                  new documents fetched
+                </div>
+              )}
+            </div>
+
+            {(report.coverage_before_fetch || report.coverage_after_fetch) && (
+              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="rounded-xl bg-surface border border-surface-hover p-3">
+                  <div className="text-text-muted">Before fetch</div>
+                  <div className="mt-1 text-text-secondary">
+                    Docs: <span className="font-medium text-text-primary">{report.coverage_before_fetch?.document_count ?? 0}</span>{' '}
+                    · Avg relevance: <span className="font-medium text-text-primary">{(report.coverage_before_fetch?.avg_relevance ?? 0).toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-surface border border-surface-hover p-3">
+                  <div className="text-text-muted">After fetch</div>
+                  <div className="mt-1 text-text-secondary">
+                    Docs: <span className="font-medium text-text-primary">{report.coverage_after_fetch?.document_count ?? report.coverage_before_fetch?.document_count ?? 0}</span>{' '}
+                    · Avg relevance: <span className="font-medium text-text-primary">{((report.coverage_after_fetch?.avg_relevance ?? report.coverage_before_fetch?.avg_relevance) ?? 0).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Results */}
         {report && !isLoading && (

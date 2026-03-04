@@ -23,6 +23,7 @@ USAGE:
 import asyncio
 import logging
 from datetime import datetime
+import re
 from typing import Optional
 from xml.etree import ElementTree as ET
 
@@ -46,7 +47,8 @@ class PubMedClient:
     
     def __init__(self):
         settings = get_settings()
-        self.api_key = settings.pubmed_api_key or None
+        raw_key = (settings.pubmed_api_key or "").strip()
+        self.api_key = raw_key or None
         
         # Rate limiting: 3 req/sec without key, 10 req/sec with key
         self.request_delay = 0.1 if self.api_key else 0.34  # seconds between requests
@@ -80,7 +82,12 @@ class PubMedClient:
         """Build request params, adding API key if available."""
         params = {k: v for k, v in kwargs.items() if v is not None}
         if self.api_key:
-            params["api_key"] = self.api_key
+            # NCBI API keys are typically alphanumeric; if the key looks suspicious,
+            # omit it rather than breaking requests.
+            if re.fullmatch(r"[A-Za-z0-9]{16,128}", self.api_key):
+                params["api_key"] = self.api_key
+            else:
+                logger.warning("PUBMED_API_KEY looks invalid; continuing without api_key")
         return params
     
     # =========================================================================
@@ -119,8 +126,21 @@ class PubMedClient:
         )
         
         try:
-            response = await client.get(f"{EUTILS_BASE}/esearch.fcgi", params=params)
-            response.raise_for_status()
+            url = f"{EUTILS_BASE}/esearch.fcgi"
+            response = await client.get(url, params=params)
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                # If PubMed rejects our api_key (common when env var is wrong),
+                # retry once without api_key so live fetch doesn't crash the request.
+                if e.response is not None and e.response.status_code == 400 and "api_key" in params:
+                    logger.warning("PubMed esearch returned 400; retrying without api_key")
+                    params_no_key = dict(params)
+                    params_no_key.pop("api_key", None)
+                    response = await client.get(url, params=params_no_key)
+                    response.raise_for_status()
+                else:
+                    raise
             
             data = response.json()
             pmids = data.get("esearchresult", {}).get("idlist", [])
@@ -176,8 +196,19 @@ class PubMedClient:
         )
         
         try:
-            response = await client.get(f"{EUTILS_BASE}/efetch.fcgi", params=params)
-            response.raise_for_status()
+            url = f"{EUTILS_BASE}/efetch.fcgi"
+            response = await client.get(url, params=params)
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                if e.response is not None and e.response.status_code == 400 and "api_key" in params:
+                    logger.warning("PubMed efetch returned 400; retrying without api_key")
+                    params_no_key = dict(params)
+                    params_no_key.pop("api_key", None)
+                    response = await client.get(url, params=params_no_key)
+                    response.raise_for_status()
+                else:
+                    raise
             
             # Parse XML response
             articles = self._parse_pubmed_xml(response.text)
@@ -450,6 +481,11 @@ async def fetch_pubmed_articles(term: str, max_results: int = 100) -> list[dict]
     """
     client = PubMedClient()
     try:
-        return await client.search_and_fetch(term, max_results)
+        try:
+            return await client.search_and_fetch(term, max_results)
+        except httpx.HTTPError as e:
+            # Live fetch should be best-effort: failures shouldn't crash /api/query.
+            logger.warning(f"Live PubMed fetch failed; continuing without live fetch: {e}")
+            return []
     finally:
         await client.close()
