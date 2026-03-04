@@ -915,6 +915,58 @@ GET https://api.fda.gov/drug/event.json?search=patient.drug.openfda.generic_name
 
 ---
 
+## 9. Frontend – AI Process Transparency
+
+### 9.1 Multi-step pipeline indicator for `/api/query`
+**Priority: Medium | Effort: Medium**
+
+- Show clear stages of the pipeline (e.g., "Retrieving articles", "Extracting claims", "Linking evidence", "Detecting gaps", "Computing confidence") instead of a single generic loading spinner.
+- Replace the current loading state in `App` with a step-specific indicator and short, plain-language descriptions for each step.
+
+### 9.2 Surface system status and data coverage
+**Priority: Medium | Effort: Low**
+
+- Call `healthCheck` and `getDocumentCounts` on app load and surface backend status and total indexed documents in a small "System status / Data coverage" widget.
+- Briefly explain key limitations (e.g., PubMed-only coverage, date ranges) so users understand why an answer might be weak.
+
+### 9.3 Explain query handling in `QueryInput`
+**Priority: Low | Effort: Low**
+
+- Add inline copy near the textarea explaining that the system will break the question into claims, retrieve clinical studies from PubMed, and verify each claim.
+- Clarify ideal question types and limitations (e.g., better for treatment-effect questions, not a general diagnostic tool).
+
+### 9.4 “How this answer was generated” in `AnswerPanel`
+**Priority: Medium | Effort: Medium**
+
+- Add a short, collapsible section that explains how claims, supporting/contradicting evidence, and gaps were combined into the final narrative answer.
+- Optionally provide a toggle or subtle annotations that link parts of the answer to specific claim IDs or confidence bands.
+
+### 9.5 Make `EvidenceMap` explicitly represent claim extraction
+**Priority: Low | Effort: Low**
+
+- Add copy at the top of `EvidenceMap` labeling it as the "Claim extraction and evidence linking" step in the pipeline.
+- Briefly describe why each document appears (e.g., top-k by semantic similarity, any filters applied) and keep relevance scores visible.
+
+### 9.6 Clarify confidence computation in `ConfidenceMeter`
+**Priority: Medium | Effort: Medium**
+
+- Add a short explanation of how `overall_confidence` is derived from per-claim confidences, supporting vs. contradicting evidence, and detected gaps.
+- When confidence is low or moderate, show a concise reason (e.g., "Several claims have weak or conflicting evidence" or "Important evidence gaps were detected").
+
+### 9.7 Explain gap detection in `GapsPanel`
+**Priority: Medium | Effort: Low**
+
+- Add copy that ties global gaps back to underlying signals such as claim-level `missing_evidence`, lack of long-term outcomes, or population mismatch.
+- Where possible, reference related claim numbers so users can see which parts of the answer each gap affects.
+
+### 9.8 Optional “Advanced / AI activity log” panel
+**Priority: Low | Effort: Medium**
+
+- Add a collapsible "Advanced" or "AI activity log" panel that logs key events during a query (retrieval completed, N documents found, claims extracted, confidence computed).
+- For power users, optionally surface extra signals such as top retrieval scores or a truncated list of documents that were considered but not used, with a note on why.
+
+---
+
 ## Implementation Priority Matrix
 
 | Improvement | Impact | Effort | Priority |
