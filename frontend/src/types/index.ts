@@ -45,6 +45,10 @@ export interface TrustReport {
 export interface QueryRequest {
   question: string;
   top_k?: number;
+  /** If true, fetch from PubMed when document coverage is insufficient */
+  live_fetch?: boolean;
+  /** Max documents to fetch from PubMed when live_fetch is true (default 50) */
+  max_fetch?: number;
 }
 
 // Document response from the backend
@@ -76,6 +80,6 @@ export interface IngestResponse {
 // Document count response
 export interface DocumentCountResponse {
   total: number;
-  with_embeddings: number;
-  without_embeddings: number;
+  embedded: number;
+  pending: number;
 }

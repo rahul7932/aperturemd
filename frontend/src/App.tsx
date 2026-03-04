@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { QueryInput, AnswerPanel, EvidenceMap, ConfidenceMeter, GapsPanel, PipelineStepper, SystemStatus } from './components';
+import { QueryInput, type QueryOptions, AnswerPanel, EvidenceMap, ConfidenceMeter, GapsPanel, PipelineStepper, SystemStatus } from './components';
 import { submitQuery, ApiError } from './api/client';
 import type { TrustReport } from './types';
 
@@ -8,12 +8,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleQuery = async (question: string) => {
+  const handleQuery = async (question: string, options: QueryOptions) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const result = await submitQuery({ question, top_k: 5 });
+      const result = await submitQuery({
+        question,
+        top_k: 5,
+        live_fetch: options.live_fetch,
+      });
       setReport(result);
     } catch (err) {
       if (err instanceof ApiError) {

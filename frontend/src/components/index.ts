@@ -1,4 +1,4 @@
-export { QueryInput } from './QueryInput';
+export { QueryInput, type QueryOptions } from './QueryInput';
 export { AnswerPanel } from './AnswerPanel';
 export { EvidenceMap } from './EvidenceMap';
 export { ConfidenceMeter } from './ConfidenceMeter';

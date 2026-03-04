@@ -1,17 +1,22 @@
 import { useState, type FormEvent } from 'react';
 
+export interface QueryOptions {
+  live_fetch: boolean;
+}
+
 interface QueryInputProps {
-  onSubmit: (question: string) => void;
+  onSubmit: (question: string, options: QueryOptions) => void;
   isLoading: boolean;
 }
 
 export function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
   const [question, setQuestion] = useState('');
+  const [liveFetch, setLiveFetch] = useState(false);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (question.trim() && !isLoading) {
-      onSubmit(question.trim());
+      onSubmit(question.trim(), { live_fetch: liveFetch });
     }
   };
 
@@ -83,6 +88,32 @@ export function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
               </>
             )}
           </button>
+        </div>
+
+        {/* Live fetch toggle */}
+        <div className="mt-3 flex items-center gap-3">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={liveFetch}
+            onClick={() => setLiveFetch((v) => !v)}
+            disabled={isLoading}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed ${
+              liveFetch ? 'bg-accent' : 'bg-surface-hover'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition ${
+                liveFetch ? 'translate-x-5' : 'translate-x-1'
+              }`}
+            />
+          </button>
+          <label className="text-sm text-text-secondary cursor-pointer select-none" onClick={() => !isLoading && setLiveFetch((v) => !v)}>
+            Live fetch from PubMed when coverage is low
+          </label>
+          {liveFetch && (
+            <span className="text-xs text-text-muted">(may take longer)</span>
+          )}
         </div>
       </form>
 

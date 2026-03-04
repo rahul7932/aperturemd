@@ -3,7 +3,7 @@ import { healthCheck, getDocumentCounts } from '../api/client';
 
 export function SystemStatus() {
   const [health, setHealth] = useState<'ok' | 'error' | null>(null);
-  const [counts, setCounts] = useState<{ total: number; with_embeddings: number } | null>(null);
+  const [counts, setCounts] = useState<{ total: number; embedded: number; pending: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,7 +18,8 @@ export function SystemStatus() {
           setHealth(healthRes.status === 'ok' ? 'ok' : 'error');
           setCounts({
             total: countRes.total,
-            with_embeddings: countRes.with_embeddings,
+            embedded: countRes.embedded,
+            pending: countRes.pending,
           });
         }
       } catch {
@@ -55,7 +56,7 @@ export function SystemStatus() {
         <>
           <span className="text-surface-hover">·</span>
           <span>
-            <span className="font-medium text-text-secondary">{counts.with_embeddings.toLocaleString()}</span>
+            <span className="font-medium text-text-secondary">{(counts.embedded ?? 0).toLocaleString()}</span>
             {' '}documents indexed (PubMed)
           </span>
         </>
