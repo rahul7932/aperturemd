@@ -440,7 +440,7 @@ curl -X POST http://localhost:8000/api/query \
 ```bash
 curl -X POST http://localhost:8000/api/documents/ingest \
   -H "Content-Type: application/json" \
-  -d '{"query": "ACE inhibitors heart failure mortality", "max_results": 50}'
+  -d '{"search_term": "ACE inhibitors heart failure mortality", "max_results": 50}'
 ```
 
 ---

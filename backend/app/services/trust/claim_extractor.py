@@ -43,6 +43,10 @@ logger = logging.getLogger(__name__)
 # Use gpt-4o-mini for claim extraction (cheaper, fast enough for this task)
 EXTRACTION_MODEL = "gpt-4o-mini"
 
+# When the LLM doesn't associate PMIDs with a claim, we link PMIDs that appear
+# within this many characters after the claim span (for citation association).
+PMID_NEARBY_CHAR_WINDOW = 100
+
 EXTRACTION_PROMPT = """You are a claim extraction system. Your job is to break down medical text into atomic, verifiable claims.
 
 RULES:
@@ -177,8 +181,7 @@ class ClaimExtractor:
                 nearby_pmids = []
                 for match in pmid_matches:
                     pmid_pos = match.start()
-                    # If PMID is within 100 chars after the claim, associate it
-                    if claim.span_start <= pmid_pos <= claim.span_end + 100:
+                    if claim.span_start <= pmid_pos <= claim.span_end + PMID_NEARBY_CHAR_WINDOW:
                         nearby_pmids.append(match.group(1))
                 
                 if nearby_pmids:

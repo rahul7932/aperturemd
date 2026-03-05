@@ -91,17 +91,17 @@ export interface Document {
   created_at: string;
 }
 
-// Ingest request for /api/documents/ingest
+// Ingest request for /api/documents/ingest (matches backend IngestRequest)
 export interface IngestRequest {
-  query: string;
+  search_term: string;
   max_results?: number;
 }
 
-// Ingest response
+// Ingest response (matches backend: fetched, saved, embedded)
 export interface IngestResponse {
-  message: string;
-  documents_added: number;
-  pmids: string[];
+  fetched: number;
+  saved: number;
+  embedded: number;
 }
 
 // Document count response

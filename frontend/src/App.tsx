@@ -19,7 +19,7 @@ function App() {
     try {
       const result = await submitQuery({
         question,
-        top_k: 5,
+        top_k: 10, // Matches backend QueryRequest default; API allows 1–50
         live_fetch: options.live_fetch,
         use_agentic_debate: options.use_agentic_debate,
       });
