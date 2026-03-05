@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   preview: {
     // Only allow your deployed host(s). Add new host if Railway gives you a new URL.
-    allowedHosts: ['frontend-production-6201.up.railway.app'],
+    allowedHosts: ['medsearch.up.railway.app'],
   },
   server: {
     proxy: {
