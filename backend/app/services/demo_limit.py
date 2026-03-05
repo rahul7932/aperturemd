@@ -30,6 +30,12 @@ async def enforce_demo_limit(ip_address: str, db: AsyncSession) -> None:
     if not getattr(settings, "demo_limit_enabled", True):
         return
 
+    # Bypass for specific IPs (e.g. your own). Comma-separated list from DEMO_LIMIT_BYPASS_IPS.
+    bypass_raw = getattr(settings, "demo_limit_bypass_ips", "") or ""
+    bypass_ips = [s.strip() for s in bypass_raw.split(",") if s.strip()]
+    if ip_address in bypass_ips:
+        return
+
     max_requests: int = getattr(settings, "demo_limit_max_requests", 2)
     if max_requests <= 0:
         # Treat non-positive values as "no limit".

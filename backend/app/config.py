@@ -47,6 +47,8 @@ class Settings(BaseSettings):
     demo_limit_enabled: bool = True
     # Maximum number of demo queries allowed per IP address.
     demo_limit_max_requests: int = 2
+    # Comma-separated IPs that skip the limit (e.g. your own IP). Set DEMO_LIMIT_BYPASS_IPS=1.2.3.4,::1
+    demo_limit_bypass_ips: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")
 
