@@ -178,7 +178,7 @@ function App() {
             {/* Answer Panel - Full Width */}
             <AnswerPanel report={report} />
 
-            {/* Agentic Debate Panel (when enabled) */}
+            {/* Expert consultation panel (when enabled) */}
             {report.used_agentic_debate && (report.debate_advocates?.length ?? 0) > 0 && (
               <DebatePanel report={report} />
             )}

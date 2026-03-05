@@ -123,7 +123,7 @@ export function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
             )}
           </div>
 
-          {/* Agentic debate toggle */}
+          {/* Expert consultation toggle */}
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -145,7 +145,7 @@ export function QueryInput({ onSubmit, isLoading }: QueryInputProps) {
               className="text-sm text-text-secondary cursor-pointer select-none"
               onClick={() => !isLoading && setUseDebate((v) => !v)}
             >
-              Use multi-agent debate for answer synthesis
+              Consultation of experts for answer synthesis
             </label>
             {useDebate && (
               <span className="text-xs text-text-muted">(higher latency and token use)</span>

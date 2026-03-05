@@ -25,9 +25,9 @@ export function DebatePanel({ report }: DebatePanelProps) {
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-text-primary">Multi-Perspective Review</h2>
+            <h2 className="text-xl font-semibold text-text-primary">Expert Consultation</h2>
             <p className="text-sm text-text-muted">
-              Clinical, methodological, safety, and patient/quality-of-life agents reviewed the same evidence from different perspectives.
+              Expert perspectives (clinical, methodological, safety, patient/quality-of-life) reviewed the same evidence.
             </p>
           </div>
         </div>
@@ -36,7 +36,7 @@ export function DebatePanel({ report }: DebatePanelProps) {
             <span className="font-medium text-text-primary">
               {report.debate_metadata.total_time_seconds.toFixed(1)}s
             </span>{' '}
-            total debate time
+            total consultation time
           </div>
         )}
       </div>
@@ -130,7 +130,7 @@ export function DebatePanel({ report }: DebatePanelProps) {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span>{showTranscript ? 'Hide full debate transcript' : 'Show full debate transcript'}</span>
+            <span>{showTranscript ? 'Hide full consultation transcript' : 'Show full consultation transcript'}</span>
           </button>
           {showTranscript && (
             <pre className="mt-3 max-h-64 overflow-auto rounded-xl bg-surface border border-surface-hover p-3 text-xs text-text-muted whitespace-pre-wrap">
